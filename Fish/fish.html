@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Fish Game! </title>
+<script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+<script>
+function start(){
+	sjs.open("target", 800, 500);
+	var backGroundNoise = new Audio('only.mp3');
+	backGroundNoise.play();
+	
+
+	var background = new sjs.Image("Images/space6.png");
+	background.setSize(sjs.getWidth(), sjs.getHeight());
+	sjs.left_screen.offset(-500);
+	sjs.right_screen.offset(500);
+	
+	var lifeTacos =0; //score
+	var lifeTaco_txt = new sjs.Text("Tacos Eaten: ", 21, "orange");
+	
+	
+	//lets get a player in here!!
+	var player =  new sjs.Image("Images/orange_left.png");
+	player.type = "player";
+	player.setSize(100,50);
+	player.friction = .1; //friction is sort of just like real friction
+	player.accel = .3; //how fast is can change ad move 0-1
+	
+	//move the player around
+	sjs.keyDown(RIGHT_KEY, function(){
+		player.setImage("Images/orange_right.png");
+		player.pushRight();
+		//console.log("player x = "+player.getX());
+	});
+	sjs.keyDown(LEFT_KEY, function(){
+		player.setImage("Images/orange_left.png");
+		player.pushLeft();
+		//console.log("player x = "+player.getX());
+	});
+	sjs.keyDown(DOWN_KEY, function(){
+		player.pushDown();
+		//console.log("player y = "+player.getY());
+	});
+	sjs.keyDown(UP_KEY, function(){
+		player.pushUp();
+		//console.log("player y = "+player.getY());
+	});
+	
+	//play with timers
+	
+	//fish food, it's yummy
+	setInterval(function(){
+		//console.log("the sleeper must awaken!");
+		var powerUp = new sjs.Image("Images/crumbs.png");
+		var x = Math.floor(Math.random()*751);
+		var y = Math.floor(Math.random()*451);
+		//console.log(x+" "+y);
+		powerUp.type = "powerUp";
+		powerUp.moveTo(x,y);
+		powerUp.setGravity();
+		powerUp.setSize(17,30);
+		powerUp.noBounds = true;
+		},1000); 
+		
+	//lets get some "bad guys"
+	setInterval(function(){
+		
+		var speed = Math.round(1+(Math.random()*10));
+		var y = Math.floor(Math.random()*sjs.getHeight());
+		//console.log(speed);
+		if(Math.random() > .5){
+			//console.log("enemy");
+			
+			var enemy = new sjs.Image("Images/titan_right.png");
+			enemy.friction = 0;
+			enemy.type = "badGuy";
+			enemy.moveTo(-enemy.getWidth(),y);
+			enemy.setSize((Math.random()*100)+17,(Math.random()*100)+17);
+			enemy.noBounds = true;
+			enemy.pushRight(speed);
+		}else {
+			
+			var enemy = new sjs.Image("Images/titan_left.png");
+			enemy.friction = 0;
+			enemy.type = "badGuy";
+			enemy.moveTo(sjs.getWidth(),y);
+			enemy.setSize((Math.random()*100)+17,(Math.random()*100)+17);
+			enemy.noBounds = true;
+			enemy.pushLeft(speed);
+		}
+		},1000);
+	
+	
+	
+	//hit detection stuff
+	sjs.onHit("badGuy", ["left_screen","right_screen"],function(badGuy, edge){
+		badGuy.destroy();
+	});
+	sjs.onHit("powerUp","bottom_screen",function(powerUp,edge){
+		//console.log("bottom");
+		powerUp.destroy();
+		}); 
+	sjs.onHit("player","powerUp",function(player,powerUp){
+		//console.log("eat");
+		powerUp.destroy();
+		//increase score
+		
+		//increase fish size
+		player.grow(60,30); //adding 60 to width and 30 to height?
+		
+		//make it smaller?? okay,
+		setTimeout(function(){
+			player.grow(-60,-30);
+			console.log(player.getWidth());
+			}, 4000);
+		
+		
+		}); 
+		
+	sjs.onHit("player", "badGuy", function(player,badGuy){
+		if(player.getWidth() > badGuy.getWidth() && player.getHeight() > badGuy.getHeight()){
+			
+			badGuy.destroy();
+			player.grow(30,15);
+			lifeTacos++;
+			lifeTaco_txt.setText("Tacos Eaten: "+lifeTacos);
+			//add a check for top score and win screen
+			if(lifeTacos >10){
+				window.location = "FishWin.html";
+			}
+			
+		}else{
+			badGuy.destroy();
+			player.destroy();
+			//a dead screen or restart the game screen
+			window.location = "FishDead.html";
+			
+		}
+	
+	});
+
+} //end start
+</script>
+</head>
+<body onload="start()">
+<h1> Fish Game! </h1>
+
+<div id="target" style="margin:auto;background:grey;"></div>
+</body>
+</html>
